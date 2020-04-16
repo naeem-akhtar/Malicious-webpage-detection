@@ -19,7 +19,7 @@ def count_delims(text):
 	return len(re.findall(r'[-_?,=&]', text))
 
 
-# either return the day pass by the target_date or -1 for invalid date
+# either return the day pass by the target_date from now or -1 for invalid date
 def calculate_days(target_date):
 	try:
 		if not target_date or type(target_date) is str:
@@ -31,7 +31,7 @@ def calculate_days(target_date):
 		
 		if type(target_date) is datetime.datetime:	
 			today = datetime.datetime.now()
-			return abs((today - target_date).days)
+			return (today - target_date).days
 		else:
 			return -1
 	except:
@@ -203,7 +203,7 @@ def host_based_features(url):
 	try:
 		who = whois.whois(domain)
 	except:
-		print('information from', domain, 'cannot be determine by whois')
+		print('No host information about', domain)
 		return [-1, -1, -1, -1]
 
 	# Finding days until / from created, updated, expiration
@@ -211,7 +211,7 @@ def host_based_features(url):
 		domain = who.domain_name[0] if type(who.domain_name) is list else who.domain_name
 		created_days_ago = calculate_days(who.creation_date)
 		updated_days_ago = calculate_days(who.updated_date)
-		expiration_days_remaining = calculate_days(who.expiration_date)
+		expiration_days_remaining = 0 - calculate_days(who.expiration_date)
 		vec.extend([created_days_ago, updated_days_ago, expiration_days_remaining])
 	except:
 		# print('Error in extracting dates from whois')

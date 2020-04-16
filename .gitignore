@@ -3,6 +3,7 @@
 *.code-workspace
 /Dataset
 /not_to_upload
+*.ipynb
 
 
 # Byte-compiled / optimized / DLL files
