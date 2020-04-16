@@ -209,9 +209,9 @@ def host_based_features(url):
 	# Finding days until / from created, updated, expiration
 	try:
 		domain = who.domain_name[0] if type(who.domain_name) is list else who.domain_name
-		created_days_ago = calculate_days(who.creation_date)
-		updated_days_ago = calculate_days(who.updated_date)
-		expiration_days_remaining = 0 - calculate_days(who.expiration_date)
+		created_days_ago = round(calculate_days(who.creation_date)/12)
+		updated_days_ago = (calculate_days(who.updated_date)/12)
+		expiration_days_remaining = (0 - calculate_days(who.expiration_date)/12)
 		vec.extend([created_days_ago, updated_days_ago, expiration_days_remaining])
 	except:
 		# print('Error in extracting dates from whois')
@@ -260,12 +260,12 @@ def vector_construction(url):
 	feature_vector.extend(lexical_features(url))
 
 	# Hots based features
-	feature_vector.extend(host_based_features(url))
+	# feature_vector.extend(host_based_features(url))
 
 	return feature_vector
 
 # for testing only
-if TESTING:
-	testing_url = 'http://www.g00gle.naeemakhtar.com/path/end/here/virus.php'
-	url = input("Enter Url or press enter to use testing url: ")
-	print(vector_construction(url if url else testing_url))
+# if TESTING:
+# 	testing_url = 'http://www.g00gle.naeemakhtar.com/path/end/here/virus.php'
+# 	url = input("Enter Url or press enter to use testing url: ")
+# 	print(vector_construction(url if url else testing_url))

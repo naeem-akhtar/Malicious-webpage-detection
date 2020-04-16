@@ -7,31 +7,30 @@ from Feature_Extraction import vector_construction
 print('Collecting urls from apis(sources)')
 collect_urls_into_csv()
 
-df_raw = pd.read_csv('final_urls_dataset.csv', header=0)
+df_urls = pd.read_csv('final_urls_dataset.csv', header=0)
 if DEBUG:
-    print(df_raw.head(5))
+    print(df_urls.head(5))
 
 print('Number of Features :', len(features_name))
 
 # Add columns to training dataset
 df_training = pd.DataFrame(columns = features_name)
 
-print('Extracting Training data from URL\'s \nThis might take a while :)\n')
+print('\nExtracting Training data from URL\'s. This might take a while :)')
 
 # Add all features
-i = 0
-for url in df_raw['url']:
-    df_training.loc[i] = vector_construction(url) + [df_raw['target'].loc[i]]
-    i+=1
-    if i >= 100:
-        break
+i, j, = 0, 0
+url_count = len(df_urls)
+for url in df_urls['url']:
+    df_training.loc[i] = vector_construction(url) + [df_urls['target'].loc[i]]
+    i += 1
+    if j*url_count <= i*(100):
+        print('Extraction status : {0}% ({1}/{2})'.format(j, i, url_count))
+        j += 5
+
 
 # delete raw dataframe 
-del(df_raw)
-
-# Add url and target columns
-# df_training['url'] = df_raw.url
-# df_training['target'] = df_raw.target
+del(df_urls)
 
 print('Extraction done')
 if DEBUG:
@@ -39,6 +38,6 @@ if DEBUG:
     print(df_training.head(5))
 
 
-df_training.to_csv('training_dataset.csv', index=False)
+df_training.to_csv('training_lexical_dataset.csv', index=False)
 
-print('Training data is dumped as csv.')
+print('Training data is dumped as csv.\n')

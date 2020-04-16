@@ -3,11 +3,11 @@ from random import shuffle
 from global_variables import DEBUG, TESTING
 
 def benign_urls_api():
-    return list(pd.read_csv('phishing_dataset.csv', names=['url'])['url'])
+    return list(pd.read_csv('Benign_list_big_final.csv', names=['url'])['url'])
 
 
 def malicious_urls_api():
-    return list(pd.read_csv('Benign_list_big_final.csv', names=['url'])['url'])
+    return list(pd.read_csv('phishing_dataset.csv', names=['url'])['url'])
 
 
 def collect_urls_into_csv(filename='final_urls_dataset.csv'):
@@ -33,5 +33,5 @@ def collect_urls_into_csv(filename='final_urls_dataset.csv'):
     df_urls.to_csv(filename, index=False)
 
 
-if TESTING:
-    collect_urls_into_csv()
+# if TESTING:
+#     collect_urls_into_csv()
