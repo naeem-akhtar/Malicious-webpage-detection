@@ -1,9 +1,8 @@
 import re
 import whois
+import time
 import datetime
-
-DEBUG = True
-# DEBUG = False
+from global_variables import DEBUG, TESTING
 
 Suspicious_Words=['secure','account','update','banking','login','click','confirm','password','verify','signin','ebayisapi','lucky','bonus']
 Suspicious_TLD=['zip','cricket','link','work','party','gq','kim','country','science','tk']
@@ -18,6 +17,7 @@ def is_ip_present(domain):
 # return number of delemiters(- _ ? , = &) in text 
 def count_delims(text):
 	return len(re.findall(r'[-_?,=&]', text))
+
 
 # either return the day pass by the target_date or -1 for invalid date
 def calculate_days(target_date):
@@ -68,8 +68,6 @@ def lexical_features(url):
 	vec.append(len(without_protocol))
 	# dots_in_url
 	vec.append(without_protocol.count('.'))
-	# hyphen_count_in_domain
-	vec.append(domain.count('-'))
 
 	# domain tokens, filter NULL values
 	domain_tokens = list(filter(lambda token: token, domain.split('.'))) if not ip_present else domain
@@ -86,43 +84,37 @@ def lexical_features(url):
 	# Filter Null values from path
 	path = list(filter(lambda token: token, path))
 
+	# Domain length
+	vec.append(len(domain))
+	# Number of all domains
+	vec.append(len(domain_tokens))
+	# hyphen_count_in_domain
+	vec.append(domain.count('-'))
+	# Largest domain name length
+	largest_domain_length = max([len(token) for token in domain_tokens]) if domain_tokens else 0
+	vec.append(largest_domain_length)
+	# Average of all domain length
+	avg_domain_length = sum([len(token) for token in domain_tokens]) / len(domain_tokens) if domain_tokens else 0
+	vec.append(avg_domain_length)
+
 	# slashes
 	slashes = len(path)
 
 	# length of directory / path length including all slashes
 	dir_length = sum([len(token) for token in path_tokens]) + slashes
 	vec.append(dir_length)
-
 	# sub-directories count
 	subdir_count = len(path_tokens)
 	vec.append(subdir_count)
-	
-	# Domain length
-	vec.append(len(domain))
-	# Number of all domains
-	vec.append(len(domain_tokens))
-	# Number of directories
-	# vec.append(len(path_tokens))
-
-	# Largest domain name length
-	largest_domain_length = max([len(token) for token in domain_tokens]) if domain_tokens else 0
-	vec.append(largest_domain_length)
-
-	# Average of all domain length
-	avg_domain_length = sum([len(token) for token in domain_tokens]) / len(domain_tokens) if domain_tokens else 0
-	vec.append(avg_domain_length)
-
 	# Largest directory name length
 	largest_path_token_length = max([len(token) for token in path_tokens]) if path_tokens else 0
 	vec.append(largest_path_token_length)
-
 	# Average of all directory length
 	avg_path_length = sum([len(token) for token in path_tokens]) / len(path_tokens) if path_tokens else 0
 	vec.append(avg_path_length)
 
 	# Top Level Domain, there can be subdomains but not counting
 	TLD = domain_tokens[-1] if domain else ''
-
 	# presence of any suspicious word in top level domain
 	if not ip_present:
 		for suspect in Suspicious_TLD:
@@ -131,6 +123,8 @@ def lexical_features(url):
 				break
 		else:
 			vec.append(0)
+	else:
+		vec.append(0)
 	
 	# Any files or arguments if present in the url 
 	file, args = '', ''
@@ -193,6 +187,7 @@ def lexical_features(url):
 		print('Average sub-directory/path name length :', avg_path_length)
 		print('File :', file)
 		print('Arguments :', args)
+		print('lexical features extracted :', len(vec))
 		print()
 
 	return vec
@@ -229,7 +224,7 @@ def host_based_features(url):
 		if '-' in zipcode:
 			zipcode = re.sub(r'-*', '', zipcode)
 		zipcode = re.sub(r'[A-Za-z\s]*', '', zipcode)
-		# vec.append(int(zipcode))
+		vec.append(int(zipcode))
 	except:
 		# print('Error in extracting zipcode from whois')
 		vec.append(-1)
@@ -241,6 +236,7 @@ def host_based_features(url):
 		print('Update days ago :', updated_days_ago)
 		print('Expired in days :', expiration_days_remaining)
 		print('Country Zipcode :', zipcode)
+		print('host based features extracted :', len(vec))
 		print()
 
 	return vec
@@ -269,7 +265,7 @@ def vector_construction(url):
 	return feature_vector
 
 # for testing only
-if DEBUG:
+if TESTING:
 	testing_url = 'http://www.g00gle.naeemakhtar.com/path/end/here/virus.php'
 	url = input("Enter Url or press enter to use testing url: ")
 	print(vector_construction(url if url else testing_url))

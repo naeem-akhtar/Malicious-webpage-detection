@@ -9,6 +9,7 @@ df = pd.read_csv('final_dataset.csv')
 print(df.columns)
 i , j = 0, 0
 for url in df['url']:
+    input('press Any key to extract feature from next url')
     try:
         # print(i, df['target'][i], url)   # Might give error because of unidentified characters in url
         if df['target'][i+j] == 0 and i<50:
