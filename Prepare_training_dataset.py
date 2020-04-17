@@ -38,6 +38,6 @@ if DEBUG:
     print(df_training.head(5))
 
 
-df_training.to_csv('training_lexical_dataset.csv', index=False)
-
+df_training.to_csv('./Dataset/training_lexical_dataset.csv', index=False)
 print('Training data is dumped as csv.\n')
+

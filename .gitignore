@@ -2,7 +2,6 @@
 .vscode
 *.code-workspace
 /venv
-/Dataset
 /not_to_upload
 *.ipynb_checkpoints
 *.ipynb
