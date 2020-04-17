@@ -1,5 +1,6 @@
 import pandas as pd
 from global_variables import DEBUG, features_name
+from global_variables import training_file_name
 from data_gathering import collect_urls_into_csv
 from Feature_Extraction import vector_construction
 
@@ -7,7 +8,7 @@ from Feature_Extraction import vector_construction
 print('Collecting urls from apis(sources)')
 collect_urls_into_csv()
 
-df_urls = pd.read_csv('final_urls_dataset.csv', header=0)
+df_urls = pd.read_csv(r'./Dataset/' + 'final_urls_dataset.csv', header=0)
 if DEBUG:
     print(df_urls.head(5))
 
@@ -38,6 +39,6 @@ if DEBUG:
     print(df_training.head(5))
 
 
-df_training.to_csv('./Dataset/training_lexical_dataset.csv', index=False)
+df_training.to_csv('./Dataset/' + training_file_name + '.csv', index=False)
 print('Training data is dumped as csv.\n')
 

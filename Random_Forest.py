@@ -3,10 +3,10 @@ import pickle
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn import metrics
-from global_variables import model_name
+from global_variables import model_name, training_file_name
 
 # training data
-train_data = pd.read_csv('./Dataset/training_lexical_dataset.csv')
+train_data = pd.read_csv('./Dataset/' + training_file_name + '.csv')
 X = train_data.drop(['label'], axis=1)
 y = train_data['label']
 

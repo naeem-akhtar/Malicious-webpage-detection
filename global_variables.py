@@ -4,6 +4,9 @@ DEBUG = False
 TESTING = True
 # TESTING = False
 
+# training dataset name
+training_file_name = 'training_lex_host_dataset'
+
 # model classifier name (pickle file)
 model_name = 'lexical_classifier'
 
@@ -16,4 +19,4 @@ lexical_feature = ['protocol', 'IP_present', 'url_length', 'dots_in_url', 'domai
 
 host_based_features = ['created_days_ago', 'updated_days_ago', 'expiration_days_remain', 'zipcode']
 
-features_name = lexical_feature + ['label']
+features_name = lexical_feature + host_based_features + ['label']

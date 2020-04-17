@@ -243,14 +243,9 @@ def host_based_features(url):
 
 
 # URL will be converted into feature vector 
-def vector_construction(url):
-	# columns=('protocol', 'ip present', 'len of url','no of dots','security sensitive words','no of hyphens in dom',\
-	# 'dir_len','no of subdir','domain len','domain token count','path token count','largest domain_tok_len',\
-	# 'avg_dom_token_len','largest path token length','avg path token length','suspicious tld','len_of_file','total dots in file',\
-	# 'total delims in file','len_of_argument','no_of_variables','len_of_largest_variable_val',\
-	# 'max_no_of_argum_delims','create_age(months)','expiry_age(months)','update_age(days)','zipcode')
-	
+def vector_construction(url):	
 	url = url.strip()
+
 	if DEBUG:
 		print("URL :", url)
 	
@@ -260,12 +255,12 @@ def vector_construction(url):
 	feature_vector.extend(lexical_features(url))
 
 	# Hots based features
-	# feature_vector.extend(host_based_features(url))
+	feature_vector.extend(host_based_features(url))
 
 	return feature_vector
 
 # for testing only
-# if TESTING:
-# 	testing_url = 'http://www.g00gle.naeemakhtar.com/path/end/here/virus.php'
-# 	url = input("Enter Url or press enter to use testing url: ")
-# 	print(vector_construction(url if url else testing_url))
+if DEBUG:
+	testing_url = 'http://www.g00gle.naeemakhtar.com/path/end/here/virus.php'
+	url = input("Enter Url or press enter to use testing url: ")
+	print(vector_construction(url if url else testing_url))

@@ -1,9 +1,12 @@
 import pandas as pd
 from random import shuffle
 from global_variables import DEBUG, TESTING
-
+ 
 def benign_urls_api():
-    return pd.read_csv('./Dataset/all_benign.csv')['url']
+    benign1 = pd.read_csv('./Dataset/Benign_list_big_final.csv', names=['url'])['url']
+    benign2 = pd.read_csv('./Dataset/top500Domains.csv')['Root Domain']
+    return benign1.append(benign2)
+
 
 def malicious_urls_api():
     return pd.read_csv('./Dataset/all_malicious.csv')['url']
@@ -30,8 +33,8 @@ def collect_urls_into_csv(filename='final_urls_dataset'):
     # Save as csv
     print('urls saved as', filename)
     df_urls = pd.DataFrame(data=all_urls, columns=['url', 'target'])
-    df_urls.to_csv(r'./Dataset/' + filename + '.csv', index=False)
+    df_urls[:1000].to_csv(r'./Dataset/' + filename + '.csv', index=False)
 
 
-# if TESTING:
+# if TESTING:   
 #     collect_urls_into_csv()
