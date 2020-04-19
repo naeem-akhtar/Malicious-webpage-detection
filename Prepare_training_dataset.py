@@ -1,6 +1,5 @@
 import pandas as pd
-from global_variables import DEBUG, features_name
-from global_variables import training_file_name
+from global_variables import DEBUG, features_name, training_file_name
 from data_gathering import collect_urls_into_csv
 from Feature_Extraction import vector_construction
 

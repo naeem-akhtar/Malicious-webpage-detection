@@ -1,4 +1,5 @@
 from prediction import predict
+from global_variables import DEBUG
 
 
 for _ in range(int(input('Enter number of urls: '))):

@@ -255,12 +255,12 @@ def vector_construction(url):
 	feature_vector.extend(lexical_features(url))
 
 	# Hots based features
-	# feature_vector.extend(host_based_features(url))
+	feature_vector.extend(host_based_features(url))
 
 	return feature_vector
 
 # for testing only
-if DEBUG:
+if TESTING:
 	testing_url = 'http://www.g00gle.naeemakhtar.com/path/end/here/virus.php'
 	url = input("Enter Url or press enter to use testing url: ")
 	print(vector_construction(url if url else testing_url))
