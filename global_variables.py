@@ -10,6 +10,11 @@ training_file_name = 'training_lex_host_dataset'
 # model classifier name (pickle file)
 model_name = 'lexical_classifier'
 
+# training password
+training_psswd = '1913'
+# % complete, urls done, time
+training_status = []
+
 # suspicious top-level-domain
 Suspicious_TLD=['zip','cricket','link','work','party','gq','kim','country','science','tk']
 
