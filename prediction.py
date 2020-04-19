@@ -10,5 +10,6 @@ def predict(url):
     is_malicious = classifier.predict([vector_construction(url)])
     return is_malicious[0]
 
+
 if TESTING:
     print(predict(input()))

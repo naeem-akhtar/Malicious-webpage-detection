@@ -12,7 +12,7 @@ def benign_urls_api():
 def malicious_urls_api():
     return pd.read_csv('./Dataset/filtered_malicious.csv')['url']
 
-
+    
 def collect_urls_into_csv(filename='final_urls_dataset'):
     # serries of urls
     benign_urls = benign_urls_api()

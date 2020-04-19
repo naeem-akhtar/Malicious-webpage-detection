@@ -5,7 +5,7 @@ DEBUG = False
 TESTING = False
 
 # training dataset name
-training_file_name = 'training_lexical_1_million_dataset'
+training_file_name = 'training_lex_host_dataset'
 
 # model classifier name (pickle file)
 model_name = 'lexical_classifier'
