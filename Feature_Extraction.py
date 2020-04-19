@@ -2,11 +2,10 @@ import re
 import whois
 import time
 import datetime
-from global_variables import DEBUG, TESTING
+from global_variables import DEBUG, TESTING, Suspicious_TLD
 
 valid_ip = re.compile(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
 Suspicious_Words=['secure','account','update','banking','login','click','confirm','password','verify','signin','ebayisapi','lucky','bonus']
-Suspicious_TLD=['zip','cricket','link','work','party','gq','kim','country','science','tk']
 
 
 # take a string and output 1 if it contains an ip address
@@ -255,7 +254,7 @@ def vector_construction(url):
 	feature_vector.extend(lexical_features(url))
 
 	# Hots based features
-	feature_vector.extend(host_based_features(url))
+	# feature_vector.extend(host_based_features(url))
 
 	return feature_vector
 

@@ -24,9 +24,8 @@ url_count = len(df_urls)
 for url in df_urls['url']:
     df_training.loc[i] = vector_construction(url) + [df_urls['target'].loc[i]]
     i += 1
-    if j*url_count <= i*(100):
-        print('Extraction status : {0}% ({1}/{2})'.format(j, i, url_count))
-        j += 5
+    if i%1000 == 0:
+        print('Extraction status : {0}% ({1}/{2})'.format(round(i*100/url_count, 2), i, url_count))
 
 
 # delete raw dataframe 
