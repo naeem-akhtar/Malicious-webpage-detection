@@ -5,6 +5,5 @@
 /not_to_upload
 *.ipynb_checkpoints
 *.ipynb
-*.pkl
 __pycache__/
 .DS_Store
