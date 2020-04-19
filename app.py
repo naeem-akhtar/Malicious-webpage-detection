@@ -1,13 +1,27 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import prediction
 from global_variables import DEBUG
 
 
 app = Flask(__name__)
 
-@app.route('/', methods=['GET'])
+@app.route('/', methods=['GET', 'POST'])
 def home():
-    return 'Go to predict page for checking the state of an url using POST request.'
+    if request.method == 'POST':
+        try:
+            url = request.form['url']
+            state = 'malicious :(' if prediction.predict(url) else 'safe :)'
+            # print(url, state)
+        except:
+            state = 'Error in cheking url.'
+        return render_template('home.html', url_placeholder = url, state = state )
+    elif request.method == 'GET':
+        return render_template('home.html', url_placeholder = 'Enter your url here', state = '')
+
+
+@app.route('/about', methods=['GET'])
+def about():
+    return render_template('about.html')
 
 
 @app.route('/predict', methods=['POST'])
@@ -25,4 +39,4 @@ def predict():
 
 
 if __name__ == '__main__':
-    app.run(debug=DEBUG)
+    app.run(debug=True)

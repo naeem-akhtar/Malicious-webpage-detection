@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container col-75">
+    <p class="row"> I just asked you to test the urls and you are roaming on this page.</p>
+    <div class="row">
+        <a href="{{ url_for('home') }}">I want to go home. Sorry, I won't do that again.</a>
+    </div>
+</div>
+{% endblock %}

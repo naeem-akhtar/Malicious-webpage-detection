@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Malicios URL's detector</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='template.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            {% block content %}
+            {% endblock %}
+        </div>
+        <div class="row">
+            <p> This website for experimental and testing use only.</p>
+            <p> We are currently improving our model and need more data, so please test as much urls as you like.</p>
+        </div>
+    </div>
+</body>
+
+</html>
