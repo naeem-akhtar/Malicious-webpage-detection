@@ -2,11 +2,10 @@ import re
 import whois
 import time
 import datetime
-from global_variables import DEBUG, TESTING, Suspicious_TLD
+from Blacklist import blacklist, find_domains
+from global_variables import DEBUG, TESTING, Suspicious_TLD, Suspicious_Words
 
 valid_ip = re.compile(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
-Suspicious_Words=['secure','account','update','banking','login','click','confirm','password','verify','signin','ebayisapi','lucky','bonus']
-
 
 # take a string and output 1 if it contains an ip address
 def is_ip_present(domain):
@@ -16,6 +15,10 @@ def is_ip_present(domain):
 # return number of delemiters(- _ ? , = &) in text 
 def count_delims(text):
 	return len(re.findall(r'[-_?,=&]', text))
+
+# return number of digits in text / domains
+def count_digits(text):
+	return len(re.findall(r'[0-9]', text))
 
 
 # either return the day pass by the target_date from now or -1 for invalid date
@@ -42,23 +45,15 @@ def lexical_features(url):
 	# vector storing lexical features
 	vec = []
 
-	# protocol use by website
-	protocol = re.match(r'^http(s*)', url)
-	if not protocol:
-		vec.append(-1)
-	elif protocol.group(0) == 'https':
-		vec.append(1)
-	elif protocol.group(0) == 'http':
-		vec.append(0)
-	else:
-		vec.append(-1)
-
 	# remove http:// or https:// from url if any
 	without_protocol = re.sub(r'^http(s*)://', '', url)
 	
 	domain = re.match(r'^[^/]*', without_protocol).group(0)
 	path = re.findall(r'/[^/]*', without_protocol)
 
+	# if domain is in blacklist containing confirmed malicious urls domains
+	vec.append(1 if find_domains(blacklist, domain) else 0)
+	
 	# check if any ip present in Domain
 	ip_present = is_ip_present(domain)
 	vec.append(ip_present)
@@ -89,12 +84,14 @@ def lexical_features(url):
 	vec.append(len(domain_tokens))
 	# hyphen_count_in_domain
 	vec.append(domain.count('-'))
+	# digits_count_in_domain
+	vec.append(count_digits(domain))
 	# Largest domain name length
 	largest_domain_length = max([len(token) for token in domain_tokens]) if domain_tokens else 0
 	vec.append(largest_domain_length)
 	# Average of all domain length
 	avg_domain_length = sum([len(token) for token in domain_tokens]) / len(domain_tokens) if domain_tokens else 0
-	vec.append(avg_domain_length)
+	vec.append(round(avg_domain_length, 1))
 
 	# slashes
 	slashes = len(path)
@@ -110,7 +107,7 @@ def lexical_features(url):
 	vec.append(largest_path_token_length)
 	# Average of all directory length
 	avg_path_length = sum([len(token) for token in path_tokens]) / len(path_tokens) if path_tokens else 0
-	vec.append(avg_path_length)
+	vec.append(round(avg_path_length, 1))
 
 	# Top Level Domain, there can be subdomains but not counting
 	TLD = domain_tokens[-1] if domain else ''
@@ -209,8 +206,8 @@ def host_based_features(url):
 	try:
 		domain = who.domain_name[0] if type(who.domain_name) is list else who.domain_name
 		created_days_ago = round(calculate_days(who.creation_date)/12)
-		updated_days_ago = (calculate_days(who.updated_date)/12)
-		expiration_days_remaining = (0 - calculate_days(who.expiration_date)/12)
+		updated_days_ago = round(calculate_days(who.updated_date)/12)
+		expiration_days_remaining = round(0 - calculate_days(who.expiration_date)/12)
 		vec.extend([created_days_ago, updated_days_ago, expiration_days_remaining])
 	except:
 		# print('Error in extracting dates from whois')
