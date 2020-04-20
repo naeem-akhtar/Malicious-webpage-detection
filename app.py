@@ -1,20 +1,14 @@
+from sys import setrecursionlimit
 from flask import Flask, request, jsonify, render_template, current_app
-from blinker import Namespace
 import logging
 import prediction
 from Prepare_training_dataset import extract_training_data
-from global_variables import DEBUG, training_psswd, training_status
+from global_variables import DEBUG
 
+# needed to pickle blacklist
+setrecursionlimit(5000)
 
 app = Flask(__name__)
-
-training_signals = Namespace()
-def start_training(app, **extra):
-    extract_training_data()
-
-
-train = training_signals.signal('train')
-train.connect(start_training, app)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -48,25 +42,6 @@ def predict():
         return jsonify(state = int(is_malicious), description = 'malicios :(' if is_malicious else 'safe :)')
     except:
         return jsonify(description = 'Error in checking this url.')
-
-
-@app.route('/training', methods=['POST'])
-def training():
-    if request.method == 'POST':
-        try:
-            password = request.json['password']
-            if password == training_psswd:
-                try:
-                    # training of model start
-                    train.send(current_app._get_current_object())
-                    # training end
-                    return jsonify(result = 'Prepared training database. ML Model can be trained.')
-                except:
-                    return jsonify(result = 'cannot prepare training dataset.')
-            else:
-                return jsonify(result = 'wrong password')
-        except:
-            return jsonify(result = 'cannot extract password')
 
 
 if __name__ == '__main__':

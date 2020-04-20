@@ -43,7 +43,7 @@ def extract_training_data():
             training_status = [round(i*100/url_count, 2), i, calculate_time(time.time(), start_time)]
             print('Extraction status : {0}% ({1}), time : {2}'.format(*training_status))
             # gunicorn logs
-            app.logger.info('Extraction status : {0}% ({1}), time : {2}'.format(*training_status))
+            # app.logger.info('Extraction status : {0}% ({1}), time : {2}'.format(*training_status))
 
     # delete raw dataframe 
     del(df_urls)
@@ -54,9 +54,9 @@ def extract_training_data():
         print(df_training.head(5))
 
 
-    df_training.to_csv('/Dataset/' + training_file_name + '.csv', index=False)
+    df_training.to_csv('./Dataset/' + training_file_name + '.csv', index=False)
     print('Training data is dumped as csv.\n')
 
 
-if '__name__' == '__main__':
-    extract_training_data()
+# if '__name__' == '__main__':
+extract_training_data()

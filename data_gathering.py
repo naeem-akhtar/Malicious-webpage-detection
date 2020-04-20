@@ -6,17 +6,23 @@ def benign_urls_api():
     # benign1 = pd.read_csv('./Dataset/Benign_list_big_final.csv', names=['url'])['url']
     # benign2 = pd.read_csv('./Dataset/top500Domains.csv')['Root Domain']
     # return benign1.append(benign2)
-    return pd.read_csv('Dataset/filtered_benign.csv')['url']
+    urls =  pd.read_csv('./Dataset/filtered_benign.csv')['url']
+    return list(urls)
 
 
 def malicious_urls_api():
-    return pd.read_csv('Dataset/filtered_malicious.csv')['url']
+    urls =  pd.read_csv('./Dataset/filtered_malicious.csv')['url']
+    return list(urls)
 
-    
+
 def collect_urls_into_csv(filename='final_urls_dataset'):
-    # serries of urls
-    benign_urls = benign_urls_api()
+    # list of urls
     malicious_urls = malicious_urls_api()
+    benign_urls = benign_urls_api()
+
+    # take only random 50k benign urls
+    shuffle(benign_urls)
+    benign_urls = benign_urls[:50000]
 
     print('Collected', len(benign_urls), 'benign urls')
     print('Collected', len(malicious_urls), 'malicious_urls')
@@ -34,7 +40,7 @@ def collect_urls_into_csv(filename='final_urls_dataset'):
     # Save as csv
     print('urls saved as', filename)
     df_urls = pd.DataFrame(data=all_urls, columns=['url', 'target'])
-    df_urls.to_csv(r'Dataset/' + filename + '.csv', index=False)
+    df_urls.to_csv(r'./Dataset/' + filename + '.csv', index=False)
 
 
 # if TESTING:   

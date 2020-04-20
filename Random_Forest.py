@@ -6,7 +6,7 @@ from sklearn import metrics
 from global_variables import model_name, training_file_name
 
 # training data
-train_data = pd.read_csv('/Dataset/' + training_file_name + '.csv')
+train_data = pd.read_csv('./Dataset/' + training_file_name + '.csv')
 X = train_data.drop(['label'], axis=1)
 y = train_data['label']
 
@@ -20,7 +20,7 @@ classifier = DecisionTreeClassifier()
 classifier.fit(X_train, y_train)
 
 # dumping model for further use
-pickle.dump(classifier, open(r'/Dataset/' + model_name + '.pkl', 'wb'))
+pickle.dump(classifier, open(r'./Dataset/' + model_name + '.pkl', 'wb'))
 
 # testing
 y_pred = classifier.predict(X_test)
