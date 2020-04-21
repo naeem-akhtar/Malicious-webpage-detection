@@ -2,7 +2,7 @@ import re
 import whois
 import time
 import datetime
-from Blacklist import blacklist, find_domains
+from Blacklist import blacklist
 from global_variables import DEBUG, TESTING, Suspicious_TLD, Suspicious_Words
 
 valid_ip = re.compile(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
@@ -52,7 +52,7 @@ def lexical_features(url):
 	path = re.findall(r'/[^/]*', without_protocol)
 
 	# if domain is in blacklist containing confirmed malicious urls domains
-	vec.append(1 if find_domains(blacklist, domain) else 0)
+	vec.append(1 if blacklist.find_domains(domain) else 0)
 	
 	# check if any ip present in Domain
 	ip_present = is_ip_present(domain)
