@@ -7,3 +7,5 @@
 *.ipynb
 __pycache__/
 .DS_Store
+chromedriver
+geckodriver.log

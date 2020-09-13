@@ -5,24 +5,29 @@ import prediction
 from Prepare_training_dataset import extract_training_data
 from global_variables import DEBUG
 
-# needed to pickle blacklist
-setrecursionlimit(5000)
+# needed to pickle blacklist, very high and unreliable
+setrecursionlimit(10000)
 
 app = Flask(__name__)
-
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
     if request.method == 'POST':
         try:
             url = request.form['url']
-            state = 'malicious :(' if prediction.predict(url) else 'safe :)'
+            is_malicious = prediction.predict(url)
+            if is_malicious == 2:
+                state = 'Blacklisted, very high potential to be malicious'
+            elif is_malicious == 1:
+                state = 'Predicted to be malicious :('
+            else:
+                state = 'Safe :)'
             # print(url, state)
         except:
             state = 'Error in cheking url.'
         return render_template('home.html', url_placeholder = url, state = state )
     elif request.method == 'GET':
-        return render_template('home.html', url_placeholder = 'Enter your url here', state = '')
+        return render_template('home.html', url_placeholder = '', state = '')
 
 
 @app.route('/about', methods=['GET'])
@@ -36,12 +41,18 @@ def predict():
         try:
             url = request.json['url']
         except:
-            return jsonify(description = 'wrong url format.')
+            return jsonify(state = -1, description = 'wrong url format.')
         is_malicious = prediction.predict(url)
+        if is_malicious == 2:
+            description = 'Blacklisted, very high potential to be malicious'
+        elif is_malicious == 1:
+            description = 'Predicted to be malicious :('
+        else:
+            description = 'Safe :)'
         # print(data.items())
-        return jsonify(state = int(is_malicious), description = 'malicios :(' if is_malicious else 'safe :)')
+        return jsonify(state = int(is_malicious), description = description)
     except:
-        return jsonify(description = 'Error in checking this url.')
+        return jsonify(state = -1, description = 'Error in checking this url.')
 
 
 if __name__ == '__main__':

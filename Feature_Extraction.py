@@ -1,15 +1,18 @@
 import re
 import whois
 import time
-import datetime
-from Blacklist import blacklist
+from datetime import datetime
+import requests
+from bs4 import BeautifulSoup
+# from Blacklist import blacklists
 from global_variables import DEBUG, TESTING, Suspicious_TLD, Suspicious_Words
 
-valid_ip = re.compile(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
+valid_ipv4 = re.compile(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
+valid_link = re.compile('^http(s*)://*')
 
 # take a string and output 1 if it contains an ip address
 def is_ip_present(domain):
-	return 1 if valid_ip.match(domain) else 0
+	return 1 if valid_ipv4.match(domain) else 0
 
 
 # return number of delemiters(- _ ? , = &) in text 
@@ -23,45 +26,87 @@ def count_digits(text):
 
 # either return the day pass by the target_date from now or -1 for invalid date
 def calculate_days(target_date):
+	# print(target_date)
 	try:
-		if not target_date or type(target_date) is str:
+		if not target_date:
 			return -1
 
 		# if list take the last element from list (datetime object)
 		if type(target_date) is list:
 			target_date = target_date[0]
-		
-		if type(target_date) is datetime.datetime:	
-			today = datetime.datetime.now()
-			return round((today - target_date).days)
-		else:
-			return -1
-	except:
+		if type(target_date) is str:
+			target_date = datetime.strptime(target_date, '%Y-%m-%d %H:%M:%S')
+			
+		today = datetime.now()
+		return round((today - target_date).days)
+	except Exception as error:
+		print(error)
 		return -1
 
+# finding if any tag conatins external link
+def any_external_link(site_domain, soup, tag, tag_attribute):
+	try:
+		if DEBUG:
+			print('links in', tag, 'tag and', tag_attribute, 'attribute:')
+		for current_tag in soup.find_all(tag):
+			link = current_tag.get(tag_attribute)
+			if valid_link.match(link):
+				if DEBUG:
+					print(link)
+				link_domain = re.match(r'^[^/]*', re.sub(r'^www.', '', re.sub(r'^http(s*)://', '', link))).group(0)
+				if link_domain != site_domain:
+					return 1
+		return 0
+	except:
+		return 0
 
-# return a vector containing lexical features
-def lexical_features(url):
+# return href of favicon
+def facivon_external_link_or_empty(site_domain, soup):
+	try:
+		icon_link = soup.find("link", rel="shortcut icon")
+		if icon_link is None:
+			icon_link = soup.find("link", rel="icon")
+		if icon_link is None:
+			icon_link = site_domain + '/favicon.ico'
+
+		link = icon_link['href']
+		if DEBUG:
+			print('favicon link :', link)
+		if valid_link.match(link):
+			link_domain = re.match(r'^[^/]*', re.sub(r'^www.', '', re.sub(r'^http(s*)://', '', link))).group(0)
+			if debug:
+				print(site_domain, link_domain)
+			if link_domain != site_domain:
+				return 1
+		return 0
+	except:
+		return 1
+
+
+# Fast and easy to extract
+def lexical_features(url, without_protocol):
 	# vector storing lexical features
 	vec = []
 
-	# remove http:// or https:// from url if any
-	without_protocol = re.sub(r'^http(s*)://', '', url)
-	
 	domain = re.match(r'^[^/]*', without_protocol).group(0)
 	path = re.findall(r'/[^/]*', without_protocol)
-
-	# if domain is in blacklist containing confirmed malicious urls domains
-	vec.append(1 if blacklist.find_domains(domain) else 0)
 	
 	# check if any ip present in Domain
 	ip_present = is_ip_present(domain)
 	vec.append(ip_present)
 
-	# URL_length
-	vec.append(len(without_protocol))
-	# dots_in_url
-	vec.append(without_protocol.count('.'))
+	# URL_length > 53
+	vec.append(1 if len(url) > 53 else 0)
+	# dots_in_url > 2
+	vec.append(1 if without_protocol.count('.') > 2 else 0)
+	# having_at_the_rate
+	vec.append(1 if '@' in without_protocol else 0)
+	# having_double_slash
+	vec.append(1 if '//' in without_protocol else 0)
+	# having_https
+	vec.append(1 if re.match('https', without_protocol) else 0) 
+	# url_shortening_service
+	pass
 
 	# domain tokens, filter NULL values
 	domain_tokens = list(filter(lambda token: token, domain.split('.'))) if not ip_present else domain
@@ -78,36 +123,19 @@ def lexical_features(url):
 	# Filter Null values from path
 	path = list(filter(lambda token: token, path))
 
-	# Domain length
-	vec.append(len(domain))
-	# Number of all domains
-	vec.append(len(domain_tokens))
-	# hyphen_count_in_domain
-	vec.append(domain.count('-'))
-	# digits_count_in_domain
-	vec.append(count_digits(domain))
-	# Largest domain name length
-	largest_domain_length = max([len(token) for token in domain_tokens]) if domain_tokens else 0
-	vec.append(largest_domain_length)
-	# Average of all domain length
-	avg_domain_length = sum([len(token) for token in domain_tokens]) / len(domain_tokens) if domain_tokens else 0
-	vec.append(round(avg_domain_length, 1))
 
-	# slashes
-	slashes = len(path)
+	# hyphen_in_domain ?
+	vec.append(1 if '-' in domain else 0)
+	# digits_in_domain ?
+	vec.append(1 if any([a.isdigit() for a in domain]) else 0)
 
-	# length of directory / path length including all slashes
-	dir_length = sum([len(token) for token in path_tokens]) + slashes
-	vec.append(dir_length)
-	# sub-directories count
-	subdir_count = len(path_tokens)
-	vec.append(subdir_count)
-	# Largest directory name length
+	# length of directory / path length including all slashes > 25
+	dir_length = len(re.sub(r'^[^/]*', '', without_protocol))
+	vec.append(1 if dir_length > 25 else 0)
+
+	# Largest directory name length > 11
 	largest_path_token_length = max([len(token) for token in path_tokens]) if path_tokens else 0
-	vec.append(largest_path_token_length)
-	# Average of all directory length
-	avg_path_length = sum([len(token) for token in path_tokens]) / len(path_tokens) if path_tokens else 0
-	vec.append(round(avg_path_length, 1))
+	vec.append(1 if largest_path_token_length > 11 else 0)
 
 	# Top Level Domain, there can be subdomains but not counting
 	TLD = domain_tokens[-1] if domain else ''
@@ -130,40 +158,15 @@ def lexical_features(url):
 		
 		# file name
 		file = temporary[0]
-		# Length of file name
-		vec.append(len(file))
-		# dots in file name
-		vec.append(file.count('.'))
-		# Count delimeters in file name
-		vec.append(count_delims(file))
+		# Length of file name > 5
+		vec.append(1 if len(file) > 5 else 0)
 
 		# Arguments present in URL
 		args = temporary[1] if len(temporary) > 1 else ''
-		# POST or PUT arguments present
-		if args:
-			# Argument length
-			vec.append(len(args)+1)
-			# Split all arguments as tokens 
-			args_token = args.split('&')
-			# Number of arguments
-			vec.append(len(args_token))
-			
-			# largest argument name length
-			largets_argument_length = 0
-			# maximum number of delimeters in any argument 
-			max_delims_count = 0
-			for argument in args_token:
-				query = argument.split('=')
-				largets_argument_length = max(largets_argument_length, len(query[0]))
-				max_delims_count = max(max_delims_count, count_delims(query[0]))
-				if len(query) > 1:
-					max_delims_count = max(max_delims_count, count_delims(query[1]))
-			vec.append(largets_argument_length)
-			vec.append(max_delims_count)
-		else:
-			vec.extend([0, 0, 0, 0])
+		# arguments name length >  15
+		vec.append(1 if len(args) > 15 else 0)
 	else:
-		vec.extend([0, 0, 0, 0, 0, 0, 0])
+		vec.extend([0, 0])
 
 
 	if DEBUG:
@@ -172,15 +175,9 @@ def lexical_features(url):
 		print("Path :", path)
 		print("Path Tokens :", path_tokens)
 		print("Other information :", other_info)
-		print("Directory Length :", dir_length)
-		print('Sub Directory Count :', subdir_count)
 		print('Domain Length :', len(domain))
 		print('Domain Count :', len(domain_tokens))
 		print('IP present :', ip_present)
-		print('Largest Domain name Length :', largest_domain_length)
-		print('Average Domain name Length :', avg_domain_length)
-		print('Largest sub-directory/path name length:', largest_path_token_length)
-		print('Average sub-directory/path name length :', avg_path_length)
 		print('File :', file)
 		print('Arguments :', args)
 		print('lexical features extracted :', len(vec))
@@ -189,53 +186,74 @@ def lexical_features(url):
 	return vec
 
 
-# return a vector containing host based features 
-def host_based_features(url):
+# slow but easy to extract
+# whois_info is in form of dictionary now
+def host_based_features(url, without_protocol):
 	vec = []
-	# remove protocol and extract the domain name from start
-	domain = re.match(r'^[^/]*', re.sub(r'http(s*)://', '', url)).group(0)
+	# domain name from start
+	domain = re.match(r'^[^/]*', without_protocol).group(0)
 	
 	# Retriving information from whois server, might be slow !
 	try:
+		# who = whois_info
 		who = whois.whois(domain)
 	except:
-		print('No host information about', domain)
-		return [-1, -1, -1, -1]
+		# print('NO information on whois')
+		return [1 , 1]
 
 	# Finding days until / from created, updated, expiration
 	try:
-		domain = who.domain_name[0] if type(who.domain_name) is list else who.domain_name
-		created_days_ago = round(calculate_days(who.creation_date)/12)
-		updated_days_ago = round(calculate_days(who.updated_date)/12)
-		expiration_days_remaining = round(0 - calculate_days(who.expiration_date)/12)
-		vec.extend([created_days_ago, updated_days_ago, expiration_days_remaining])
-	except:
-		# print('Error in extracting dates from whois')
-		vec.extend([-1, -1, -1])
-
-	# Country zip code
-	try:
-		zipcode = who.zipcode
-		# remove extra character from zipcode
-		if '-' in zipcode:
-			zipcode = re.sub(r'-*', '', zipcode)
-		zipcode = re.sub(r'[A-Za-z\s]*', '', zipcode)
-		vec.append(int(zipcode))
-	except:
-		# print('Error in extracting zipcode from whois')
-		vec.append(-1)
+		# domain = who['domain_name[0]] if type(who.domain_name) is list else who.domain_name
+		created_days_ago = (calculate_days(who['creation_date']))
+		print(created_days_ago)
+		vec.extend([1 if created_days_ago < 365 else 0, 0])
+	except Exception as error:
+		print(error)
+		vec.extend([1, 0])
 
 	if DEBUG:
-		# print('WHO information :', who)
-		print('Domain name :', domain)
+		print('WHO information :', who)
+		# print('Domain name :', domain)
 		print('Created days ago :', created_days_ago)
-		print('Update days ago :', updated_days_ago)
-		print('Expired in days :', expiration_days_remaining)
-		print('Country Zipcode :', zipcode)
-		print('host based features extracted :', len(vec))
 		print()
 
 	return vec
+
+
+# slow and difficult to extract
+def content_based_features(url, without_protocol):
+	valid_link = re.compile('^http(s*)://*')
+	site_domain = re.match(r'^[^/]*', without_protocol).group(0)
+
+	try:
+		soup = BeautifulSoup(content_raw, "html.parser")
+
+		# features
+		vec = []
+
+		# having iframe with external link
+		vec.append(any_external_link(site_domain, soup, 'iframe', 'src'))
+		# having <a> with external link
+		vec.append(any_external_link(site_domain, soup, 'a', 'href'))
+		# having favicon with external link
+		vec.append(facivon_external_link_or_empty(site_domain, soup))
+		# having an object (image, video, audio) with external link
+		if any_external_link(site_domain, soup, 'img', 'src') or \
+			any_external_link(site_domain, soup, 'source', 'src'):
+			vec.append(1)
+		else:
+			vec.append(0)
+		# redirecting to an external link
+		# try:
+		#     redirect_url = soup.find('meta')
+		#     print(redirect_url)
+		#     # vec.append(1 if )
+		# except:
+		#     vec.append(0)
+
+		return vec
+	except:
+		return [1, 1, 1, 1]
 
 
 # URL will be converted into feature vector 
@@ -247,16 +265,22 @@ def vector_construction(url):
 	
 	feature_vector = []
 
+	# remove http:// or https:// and www. from start of url if any
+	without_protocol = re.sub(r'^www.', '', re.sub(r'^http(s*)://', '', url))
+
 	# Lexical features
-	feature_vector.extend(lexical_features(url))
+	feature_vector.extend(lexical_features(url, without_protocol))
 
 	# Hots based features
-	# feature_vector.extend(host_based_features(url))
+	feature_vector.extend(host_based_features(url, without_protocol))
+
+	# Content based features
+	# feature_vector.extend(content_based_features(url, without_protocol))
 
 	return feature_vector
 
 # for testing only
-if TESTING:
-	testing_url = 'http://www.g00gle.naeemakhtar.com/path/end/here/virus.php'
+if __name__ == '__main__':
+	testing_url = 'https://www.google.com.naeemakhtar.com/path/end/here/virus.php'
 	url = input("Enter Url or press enter to use testing url: ")
 	print(vector_construction(url if url else testing_url))

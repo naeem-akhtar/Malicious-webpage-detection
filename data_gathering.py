@@ -1,6 +1,6 @@
 import pandas as pd
 from random import shuffle
-from global_variables import DEBUG, TESTING
+from global_variables import DEBUG, TESTING, urls_file_name
  
 def benign_urls_api():
     # benign1 = pd.read_csv('./Dataset/Benign_list_big_final.csv', names=['url'])['url']
@@ -15,14 +15,17 @@ def malicious_urls_api():
     return list(urls)
 
 
-def collect_urls_into_csv(filename='final_urls_dataset'):
+def collect_urls_into_csv(filename=urls_file_name):
     # list of urls
     malicious_urls = malicious_urls_api()
     benign_urls = benign_urls_api()
 
-    # take only random 50k benign urls
+    # take only random 5k benign urls
     shuffle(benign_urls)
-    benign_urls = benign_urls[:50000]
+    benign_urls = benign_urls[:100]
+    # take only random 3k malicious urls
+    shuffle(malicious_urls)
+    malicious_urls = malicious_urls[:100]
 
     print('Collected', len(benign_urls), 'benign urls')
     print('Collected', len(malicious_urls), 'malicious_urls')

@@ -3,7 +3,7 @@ import re
 import pickle
 import pandas as pd
 
-setrecursionlimit(5000)
+setrecursionlimit(10000)
 
 class TrieNode(object):
     def __init__(self, char=None):
@@ -17,9 +17,9 @@ class Blacklist:
         self.root = TrieNode()
     
     # add new url in TRIE
-    def add_domains(self, domains):
+    def add_url(self, url):
         node = self.root
-        for char in domains:
+        for char in url:
             found_in_child = False
             # Search for the character in the children of the current `node`
             for child in node.children:
@@ -38,12 +38,12 @@ class Blacklist:
         node.terminal = True
 
     # query -> find if url exist
-    def find_domains(self, domains):
+    def find_url(self, url):
         if not self.root.children:
             return False
 
         node = self.root
-        for char in domains:
+        for char in url:
             char_not_found = True
             # Search through all the children of the present `node`
             for child in node.children:
@@ -62,12 +62,11 @@ class Blacklist:
     # A trie will be created for faster queries and space optimization
     def create_blacklist(self, path_to_csv = './Dataset/filtered_malicious.csv'):
         blacklisted_urls = pd.read_csv(path_to_csv)['url']
-        
         for url in blacklisted_urls:
-            # extract domain from url and add it to trie
-            blacklist.add_domains(re.match(r'^[^/]*', re.sub(r'^http(s*)://', '', url)).group(0))
-
-
+            # remove protocol
+            blacklist.add_url(re.sub(r'^http(s*)://', '', url))
+        pickle.dump(blacklist, open('./Dataset/blacklist.pkl', 'wb'))
+        
 
 # Actual blacklist
 try:
@@ -77,9 +76,7 @@ except:
     try:
         blacklist = Blacklist()
         blacklist.create_blacklist('./Dataset/filtered_malicious.csv')
-        pickle.dump(blacklist, open('./Dataset/blacklist.pkl', 'wb'))
         print('Blacklist dumpled as blacklist.pkl')
     except Exception as error:
         print(error)
         print('Cannot create new blacklist.')
-        blacklist = TrieNode()
