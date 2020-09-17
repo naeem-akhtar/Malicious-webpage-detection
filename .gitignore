@@ -2,10 +2,16 @@
 .vscode
 *.code-workspace
 /venv
-/not_to_upload
 *.ipynb_checkpoints
 *.ipynb
 __pycache__/
 .DS_Store
 chromedriver
 geckodriver.log
+
+# Dataset files
+*.csv
+*.pkl
+
+# research matrials and dataset
+/not_to_upload

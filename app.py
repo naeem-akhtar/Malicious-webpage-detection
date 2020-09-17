@@ -1,9 +1,9 @@
 from sys import setrecursionlimit
 from flask import Flask, request, jsonify, render_template, current_app
 import logging
-import prediction
-from Prepare_training_dataset import extract_training_data
-from global_variables import DEBUG
+from ML_Framework.Prediction.prediction import predict as predict_ML
+
+DEBUG = True
 
 # needed to pickle blacklist, very high and unreliable
 setrecursionlimit(10000)
@@ -15,7 +15,7 @@ def home():
     if request.method == 'POST':
         try:
             url = request.form['url']
-            is_malicious = prediction.predict(url)
+            is_malicious = predict_ML(url)
             if is_malicious == 2:
                 state = 'Blacklisted, very high potential to be malicious'
             elif is_malicious == 1:
@@ -42,7 +42,7 @@ def predict():
             url = request.json['url']
         except:
             return jsonify(state = -1, description = 'wrong url format.')
-        is_malicious = prediction.predict(url)
+        is_malicious = predict_ML(url)
         if is_malicious == 2:
             description = 'Blacklisted, very high potential to be malicious'
         elif is_malicious == 1:
