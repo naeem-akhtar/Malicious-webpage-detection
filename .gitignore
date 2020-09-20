@@ -11,7 +11,7 @@ geckodriver.log
 
 # Dataset files
 *.csv
-*.pkl
+# *.pkl
 
 # research matrials and dataset
 /not_to_upload
