@@ -1,9 +1,7 @@
 import pickle
-# from ML_Framework.utility.Feature_Extraction import vector_construction
 from ML_Framework.utility.Feature_Extraction import vector_construction
 from ML_Framework.utility.Blacklist import blacklist
 from ML_Framework.utility.global_variables import model_name, TESTING
-# ML_Framework/Dataset/models/lexi_host_classifier.pkl
 
 DATASET_MODELS_PATH = 'ML_Framework/Dataset/models/'
 

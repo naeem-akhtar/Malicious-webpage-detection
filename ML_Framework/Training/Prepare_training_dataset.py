@@ -1,8 +1,10 @@
 import pandas as pd
 import time
+
+from ML_Framework.Training.data_gathering import collect_urls_into_csv
 from ML_Framework.utility.global_variables import DEBUG, features_name, urls_file_name, training_file_name
 from ML_Framework.utility.Feature_Extraction import vector_construction
-from .data_gathering import collect_urls_into_csv
+
 
 DATASET_CSVS_PATH = 'ML_Framework/Dataset/csvs/'
 
@@ -48,7 +50,7 @@ def extract_training_data():
             # gunicorn logs
             # app.logger.info('Extraction status : {0}% ({1}), time : {2}'.format(*training_status))
 
-    # delete raw dataframe 
+    # delete raw dataframe
     del(df_urls)
 
     print('Extraction done')
@@ -61,5 +63,6 @@ def extract_training_data():
     print(f'Training data is dumped as {training_file_name}.csv\n')
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     extract_training_data()
+

@@ -5,13 +5,14 @@ DEBUG = False
 TESTING = False
 
 # urls file name
-urls_file_name = 'final_urls_dataset'
+urls_file_name = 'test_urls_1'
 
 # training dataset name
-training_file_name = 'training_lexical_dataset'
+training_file_name = 'test_dataset_1'
 
 # model classifier name (pickle file)
-model_name = 'lexical_classifier'
+# rmeove classifier name suffix from here while training
+model_name = 'test_classifier_3_decision_tree'
 
 # training password
 training_psswd = '1913'
@@ -35,3 +36,5 @@ content_based_features = ['iframe_ext_url', 'anchor_tag_ext_url', 'favicon_ext_u
 features_name = \
     lexical_feature + \
     ['label']
+
+# print(features_name)

@@ -15,7 +15,7 @@ def is_ip_present(domain):
 	return 1 if valid_ipv4.match(domain) else 0
 
 
-# return number of delemiters(- _ ? , = &) in text 
+# return number of delemiters(- _ ? , = &) in text
 def count_delims(text):
 	return len(re.findall(r'[-_?,=&]', text))
 
@@ -36,7 +36,7 @@ def calculate_days(target_date):
 			target_date = target_date[0]
 		if type(target_date) is str:
 			target_date = datetime.strptime(target_date, '%Y-%m-%d %H:%M:%S')
-			
+
 		today = datetime.now()
 		return round((today - target_date).days)
 	except Exception as error:
@@ -90,7 +90,7 @@ def lexical_features(url, without_protocol):
 
 	domain = re.match(r'^[^/]*', without_protocol).group(0)
 	path = re.findall(r'/[^/]*', without_protocol)
-	
+
 	# check if any ip present in Domain
 	ip_present = is_ip_present(domain)
 	vec.append(ip_present)
@@ -104,22 +104,22 @@ def lexical_features(url, without_protocol):
 	# having_double_slash
 	vec.append(1 if '//' in without_protocol else 0)
 	# having_https
-	vec.append(1 if re.match('https', without_protocol) else 0) 
+	vec.append(1 if re.match('https', without_protocol) else 0)
 	# url_shortening_service
 	pass
 
 	# domain tokens, filter NULL values
 	domain_tokens = list(filter(lambda token: token, domain.split('.'))) if not ip_present else domain
- 
+
 	# path tokens, without filtering Null values
 	path_tokens = [re.sub('/', '', token) for token in path]
 
 	# arguments for query or file in URL
 	other_info = path_tokens[-1] if path_tokens else ''
-	
+
 	# Remove the above part from path tokens
 	path_tokens = path_tokens[:-1]
-	
+
 	# Filter Null values from path
 	path = list(filter(lambda token: token, path))
 
@@ -149,13 +149,13 @@ def lexical_features(url, without_protocol):
 			vec.append(0)
 	else:
 		vec.append(0)
-	
-	# Any files or arguments if present in the url 
+
+	# Any files or arguments if present in the url
 	file, args = '', ''
 	if other_info:
 		# split file and arguments
 		temporary = other_info.split('?')
-		
+
 		# file name
 		file = temporary[0]
 		# Length of file name > 5
@@ -192,7 +192,7 @@ def host_based_features(url, without_protocol):
 	vec = []
 	# domain name from start
 	domain = re.match(r'^[^/]*', without_protocol).group(0)
-	
+
 	# Retriving information from whois server, might be slow !
 	try:
 		# who = whois_info
@@ -256,13 +256,13 @@ def content_based_features(url, without_protocol):
 		return [1, 1, 1, 1]
 
 
-# URL will be converted into feature vector 
-def vector_construction(url):	
+# URL will be converted into feature vector
+def vector_construction(url):
 	url = url.strip()
 
 	if DEBUG:
 		print("URL :", url)
-	
+
 	feature_vector = []
 
 	# remove http:// or https:// and www. from start of url if any
@@ -281,6 +281,6 @@ def vector_construction(url):
 
 # for testing only
 if __name__ == '__main__':
-	testing_url = 'https://www.google.com.naeemakhtar.com/path/end/here/virus.php'
+	testing_url = 'https://www.google.com.secure-webpage.tk/path/end/here/virus.php'
 	url = input("Enter Url or press enter to use testing url: ")
 	print(vector_construction(url if url else testing_url))

@@ -1,6 +1,12 @@
 import pandas as pd
-from random import shuffle
-from ML_Framework.utility.global_variables import DEBUG, TESTING, urls_file_name
+from sklearn.utils import shuffle
+
+try:
+    from ML_Framework.utility.global_variables import DEBUG, TESTING, urls_file_name
+except:
+    DEBUG = True
+    TESTING = True
+    urls_file_name = 'test_urls_1'
 
 DATASET_CSVS_PATH = 'ML_Framework/Dataset/csvs/'
 
@@ -14,15 +20,17 @@ def malicious_urls_api():
     return list(urls)
 
 
-def collect_urls_into_csv(filename=urls_file_name, benign_urls_max=10000, malicious_urls_max=1000):
-    # list of urls
+def collect_urls_into_csv(filename=urls_file_name, benign_urls_max=30000, malicious_urls_max=10000):
+    print('started data gathering process')
+    # shuffle all urls
     malicious_urls = malicious_urls_api()
+    malicious_urls = shuffle(malicious_urls)
     benign_urls = benign_urls_api()
+    benign_urls = shuffle(benign_urls)
 
+    # slice urls as limits
     benign_urls = benign_urls[:benign_urls_max]
-    # shuffle(benign_urls)
     malicious_urls = malicious_urls[:malicious_urls_max]
-    # shuffle(malicious_urls)
 
     print('Collected', len(benign_urls), 'benign urls')
     print('Collected', len(malicious_urls), 'malicious_urls')
@@ -33,9 +41,9 @@ def collect_urls_into_csv(filename=urls_file_name, benign_urls_max=10000, malici
         all_urls.append([url, 1])
     for url in benign_urls:
         all_urls.append([url, 0])
-    
-    # shuffle urls
-    shuffle(all_urls)
+
+    # shuffle all urls
+    all_urls = shuffle(all_urls)
 
     # Save as csv
     print('urls saved as', filename)
@@ -43,5 +51,6 @@ def collect_urls_into_csv(filename=urls_file_name, benign_urls_max=10000, malici
     df_urls.to_csv(DATASET_CSVS_PATH + filename + '.csv', index=False)
 
 
-# if TESTING:   
-#     collect_urls_into_csv()
+if TESTING:
+    collect_urls_into_csv()
+
