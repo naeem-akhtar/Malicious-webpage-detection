@@ -15,3 +15,7 @@ geckodriver.log
 
 # research matrials and dataset
 /not_to_upload
+
+# Files only used for testing
+temporary.py
+try.py
