@@ -8,10 +8,10 @@ if __name__=="__main__":
 	# collect_urls_into_csv()
 
 	# Preapare training dataset
-	# extract_training_data()
+	extract_training_data()
 
 	# Train ML model
-	# train_model_all()
+	train_model_all()
 
 	pass
 
